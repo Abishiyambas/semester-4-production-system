@@ -1,0 +1,39 @@
+@APIController.Plugin_HostAddress = http://localhost:5027
+
+###
+
+POST {{APIController.Plugin_HostAddress}}/ProductionSystem/Command
+Content-Type: application/json
+
+{
+	"Name": "order",
+	"Parameters": {
+		"id": 1,
+		"items": [
+			1,
+			2,
+			3,
+			4,
+			5,
+			6
+		]
+	}
+}
+
+
+###
+
+POST {{APIController.Plugin_HostAddress}}/ProductionSystem/Start
+
+
+###
+
+POST {{APIController.Plugin_HostAddress}}/ProductionSystem/Stop
+
+
+###
+
+POST {{APIController.Plugin_HostAddress}}/ProductionSystem/Reset
+
+
+###

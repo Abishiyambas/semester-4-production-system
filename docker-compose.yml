@@ -1,0 +1,68 @@
+services:
+  mqtt: 
+    image: thmork/st4-mqtt:latest
+    ports:   
+      - 1883:1883
+      - 9002:9001
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: configurepc
+      POSTGRES_USER: configurepc
+      POSTGRES_PASSWORD: configurepc
+    ports:
+      - 5433:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+  
+  st4-agv:
+    image: thmork/st4-agv:latest
+    ports:
+      - 8086:80
+ 
+  st4-warehouse1:
+    image: thmork/st4-warehouse:latest
+    ports:
+      - 8081:80
+
+  st4-warehouse2:
+    image: thmork/st4-warehouse:latest
+    ports:
+      - 8082:80
+
+  st4-warehouse3:
+    image: thmork/st4-warehouse:latest
+    ports:
+      - 8083:80
+
+
+  st4-warehouse4:
+    image: thmork/st4-warehouse:latest
+    ports:
+      - 8084:80
+
+
+  st4-warehouse5:
+    image: thmork/st4-warehouse:latest
+    ports:
+      - 8085:80
+
+  st4-assemblystation:
+    image: thmork/st4-assemblystation:latest
+    environment:
+      MQTT_TCP_CONNECTION_HOST: "mqtt"
+      MQTT_TCP_CONNECTION_PORT: 1883
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RepoPluginsDir>$(MSBuildThisFileDirectory)..\Plugins\</RepoPluginsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <ProjectReference Include="..\Common.AssetController\Common.AssetController.csproj" />
+    <ProjectReference Include="..\Common.ProductionHandler\Common.ProductionHandler.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\Common.Persistence\Common.Persistence.csproj" />
+
+    <PluginProject Include="..\Agv.Plugin\Agv.Plugin.csproj" />
+    <PluginProject Include="..\Assembly.Plugin\Assembly.Plugin.csproj" />
+    <PluginProject Include="..\Warehouse1.Plugin\Warehouse1.Plugin.csproj" />
+    <PluginProject Include="..\Warehouse2.Plugin\Warehouse2.Plugin.csproj" />
+    <PluginProject Include="..\Warehouse3.Plugin\Warehouse3.Plugin.csproj" />
+    <PluginProject Include="..\Warehouse4.Plugin\Warehouse4.Plugin.csproj" />
+    <PluginProject Include="..\Warehouse5.Plugin\Warehouse5.Plugin.csproj" />
+    <PluginProject Include="..\PubSubController.Plugin\PubSubController.Plugin.csproj" />
+    <PluginProject Include="..\ProductionMonitoring.Plugin\Monitoring.Plugin.csproj" />
+    <PluginProject Include="..\ProductionHandler.Plugin\ProductionHandler.Plugin.csproj" />
+    <PluginProject Include="..\ProductionDataHandler.Plugin\DataHandler.Plugin.csproj" />
+    <PluginProject Include="..\APIController.Plugin\RestAPI.Plugin.csproj" />
+    <PluginProject Include="..\Persistence.Plugin\Persistence.Plugin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+  </ItemGroup>
+
+  <Target Name="BuildAndCopyPlugins" AfterTargets="Build">
+    <MSBuild Projects="@(PluginProject)" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework);OutputPath=bin\$(Configuration)\$(TargetFramework)\;CopyLocalLockFileAssemblies=true" />
+    <RemoveDir Directories="$(RepoPluginsDir)" />
+    <MakeDir Directories="$(RepoPluginsDir)" />
+    <ItemGroup>
+      <PluginOutputFiles Include="..\*Plugin\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+      <PluginOutputFiles Include="..\*Plugin\bin\$(Configuration)\$(TargetFramework)\*.deps.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginOutputFiles)" DestinationFolder="$(RepoPluginsDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

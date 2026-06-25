@@ -1,0 +1,136 @@
+namespace AGVController;
+
+using CommonAssetController;
+using Common.Data;
+
+using System.Net.Http;
+
+
+public partial class AGVController : IAssetController
+{
+    private readonly HttpClient httpClient;
+    private readonly string baseUrl = "http://localhost:8086/v1";
+
+    private List<Item> _heldItems;
+
+    public event EventHandler<ProductionEvent>? ProductionEventHandler;
+
+    public AGVController()
+    {
+        httpClient = new HttpClient();
+        _heldItems = new List<Item>();
+    }
+
+    public string GetAssetName { get { return "agv"; } }
+
+    public async Task<bool> Connect()
+    {
+        return true;
+    }
+
+    public async Task<bool> Disconnect()
+    {
+        return true;
+    }
+
+    public async Task<bool> SendCommand(AssetCommand command)
+    {
+        switch (command.Name) 
+        {
+            case "MoveToChargerOperation":
+                return await MoveToCharger(command);
+
+            case "MoveToAssemblyOperation":
+                return await MoveToAssembly(command);
+
+            case "MoveToStorageOperation":
+                return await MoveToWarehouse(command);
+
+            case "PutAssemblyOperation":
+                return await Putdown(command);
+
+            case "PickAssemblyOperation":
+                if (command.Items == null)
+                    return false;
+
+                return await PickUp(command);
+
+            case "PickWarehouseOperation":
+                if (command.Items == null)
+                    return false;
+
+                return await PickUp(command);
+
+            case "PutWarehouseOperation":
+                return await Putdown(command);
+
+            case "test":
+                ProductionEventHandler?.Invoke(this, new ProductionEvent()
+                {
+                    DateAndTime = DateTime.Now,
+                    Description = "prod event test",
+                    Source = GetAssetName,
+                    Type = "prod event test",
+                    Level = "prod event test"
+                });
+                return true;
+
+            default:
+                return false;     
+        }
+    }
+
+    private async Task<bool> MoveToWarehouse(AssetCommand command)
+    {
+        await ExecuteCommand(command.Name);
+        return await WhileDoing();
+    }
+
+    private async Task<bool> MoveToAssembly(AssetCommand command)
+    {
+        await ExecuteCommand(command.Name);
+        return await WhileDoing();
+    }
+
+    private async Task<bool> MoveToCharger(AssetCommand command)
+    {
+        await ExecuteCommand(command.Name);
+        return await WhileCharging();
+    }
+
+    // pick
+    private async Task<bool> PickUp(AssetCommand command)
+    {
+        foreach (var item in command.Items ?? Array.Empty<Item>())
+        {
+            await ExecuteCommand(command.Name);
+            await WhileDoing();
+            _heldItems.Add(item);
+        }
+        return true;
+    }
+
+    // put down all items held
+    private async Task<bool> Putdown(AssetCommand command)
+    {
+        foreach (var item in _heldItems)
+        {
+            await ExecuteCommand(command.Name);
+            await WhileDoing();
+        }
+        _heldItems.Clear();
+        return true;
+    }
+
+    private void ExecuteCommandEvent(string commandName)
+    {
+        ProductionEventHandler?.Invoke(this, new ProductionEvent()
+        {
+            DateAndTime = DateTime.Now,
+            Description = commandName,
+            Source = GetAssetName,
+            Type = "command",
+            Level = "low"
+        });
+    }
+}
